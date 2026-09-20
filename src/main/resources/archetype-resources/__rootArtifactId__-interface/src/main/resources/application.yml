@@ -1,0 +1,12 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: ${rootArtifactId}
+  # Hello sample has no database. Druid auto-config (matchIfMissing=true) would
+  # fail startup without a JDBC url. Remove these excludes when you add a real datasource.
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+      - com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure

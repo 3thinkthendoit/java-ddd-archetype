@@ -15,6 +15,51 @@ ${rootArtifactId}-interface       # OSH 北向入口 + Spring Boot 启动
 
 依赖规则：**外层依赖内层**；domain 不依赖 application / infrastructure / interface。
 
+```text
+${rootArtifactId}-interface  →  application + infrastructure
+${rootArtifactId}-application → domain
+${rootArtifactId}-infrastructure → domain
+${rootArtifactId}-domain       → （无业务模块依赖）
+```
+
+## Hello 分层架构
+
+Hello 是示例垂直切片。新用例按同样方式落层。
+
+### 写路径（命令）
+
+```text
+${package}.osh.controller.HelloController
+  → ${package}.local.HelloLocalService
+  → ${package}.app.service.HelloAppService
+      → HelloAggregate.create(command)
+      → HelloDomainService.enrich(aggregate)
+      → HelloRepository.save(aggregate)
+  → ${package}.infrastructure.acl.repository.HelloRepositoryImpl
+```
+
+### 读路径（查询）
+
+查询 **不经过** 聚合：
+
+```text
+HelloController → HelloLocalService → HelloAppService.query
+  → HelloRepository.findById → HelloInfo
+```
+
+### 类 → 分层对照
+
+| 层 | 类 |
+|----|----|
+| 接口层 (`osh`) | `Application`、`HelloController` |
+| 本地门面 | `HelloLocalService` |
+| 应用层 | `HelloAppService` |
+| 领域模型 | `HelloAggregate`、`HelloId` |
+| 领域 PL（osh） | `HelloCreateCommand`、`HelloQuery` |
+| 领域 PL（acl） | `HelloInfo` |
+| 领域端口 / 服务 | `HelloRepository`、`HelloDomainService` |
+| 基础设施 ACL | `HelloRepositoryImpl`（示例为内存实现） |
+
 ## 技术栈（锁定）
 
 | 项 | 版本 |

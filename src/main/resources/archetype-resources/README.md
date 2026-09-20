@@ -15,6 +15,51 @@ ${rootArtifactId}-interface       # OSH northbound + Spring Boot entry
 
 Dependency rule: **outer depends on inner**; domain never depends on application / infrastructure / interface.
 
+```text
+${rootArtifactId}-interface  →  application + infrastructure
+${rootArtifactId}-application → domain
+${rootArtifactId}-infrastructure → domain
+${rootArtifactId}-domain       → (no business modules)
+```
+
+## Hello layered architecture
+
+Hello is the sample vertical slice. Copy this pattern for every new use case.
+
+### Write path (command)
+
+```text
+${package}.osh.controller.HelloController
+  → ${package}.local.HelloLocalService
+  → ${package}.app.service.HelloAppService
+      → HelloAggregate.create(command)
+      → HelloDomainService.enrich(aggregate)
+      → HelloRepository.save(aggregate)
+  → ${package}.infrastructure.acl.repository.HelloRepositoryImpl
+```
+
+### Read path (query)
+
+Queries **do not** go through the aggregate:
+
+```text
+HelloController → HelloLocalService → HelloAppService.query
+  → HelloRepository.findById → HelloInfo
+```
+
+### Class → layer map
+
+| Layer | Classes |
+|-------|---------|
+| Interface (`osh`) | `Application`, `HelloController` |
+| Local | `HelloLocalService` |
+| Application | `HelloAppService` |
+| Domain model | `HelloAggregate`, `HelloId` |
+| Domain PL (osh) | `HelloCreateCommand`, `HelloQuery` |
+| Domain PL (acl) | `HelloInfo` |
+| Domain port / service | `HelloRepository`, `HelloDomainService` |
+| Infrastructure ACL | `HelloRepositoryImpl` (in-memory for the sample) |
+
 ## Tech stack (locked)
 
 | Item | Version |
